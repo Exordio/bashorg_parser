@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup as bs
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0'}
 base_Url = 'https://bash.im'
-count_pg_to_parse = 150
+count_pg_to_parse = 50
 pages_url_List = []
 column_Names = ['quote_Number', 'quote_text', 'count_symbols', 'quote_total', 'quote_date', 'quote_link']
 parsed_Data_Df = pd.DataFrame(columns = column_Names)
@@ -38,7 +38,6 @@ def create_Pages_List(base_url, headers):
             for i in range(count_pg_to_parse): # отсчет 50
                 pages_url_List.append(base_url+(f'/index/{int(current_Count_Pages)-i}')) # добавление 50 ссылок
                 print(f'Successful append : {pages_url_List[i]}')
-
             print(f'\nPages list created : {datetime.now().time()}\n')
 
             return pages_url_List
@@ -48,25 +47,20 @@ def create_Pages_List(base_url, headers):
         print('create pages list/ error...')
 
 def word_Frequency(parsed_data, search_word):
-    count_word = 0
     for index, row in parsed_data.iterrows():
         #print(index, row)
 
         text = row['quote_text'].lower()
         l = text.split()
         c = Counter(l)
-        count_word += c[search_word]
+        count_word = c[search_word]
 
-
-        #print(c[search_word])
-        #print(text)
-        #print(row['quote_text'])
     print(f'Количество слов : {search_word} : {count_word}')
 
 
 def bashorg_parse(pages_url_List, headers):
-    start_time = datetime.now().time()
-    i = 0
+    #start_time = datetime.now().time()
+    #i = 0
     for url in pages_url_List:
         session = requests.Session()
         request = session.get(url, headers = headers)
@@ -87,13 +81,12 @@ def bashorg_parse(pages_url_List, headers):
 
                 except:
                     pass
-                i += 1
-    end_time = datetime.now().time()
-    print(f'Start {start_time}  end : {end_time}')
+                #i += 1
+    #end_time = datetime.now().time()
+    #print(f'Start {start_time}  end : {end_time}')
 
                 #print(f'{quote_number} |  count symbols : {count_symbols} |  count pluses : {quote_total}'
                  #     f' |  quote date : {quote_date} | href : {quote_href}')
-
 
 def parallelize_parsing(pages_url_list, func):
     start_time = datetime.now().time()
@@ -103,7 +96,6 @@ def parallelize_parsing(pages_url_list, func):
     a, b  = np.array_split(pages_url_list, 2)
     e1 = threading.Event()
     e2 = threading.Event()
-
     t1 = threading.Thread(target=func, args=(a, headers))
     t2 = threading.Thread(target=func, args=(b, headers))
     t1.start()
@@ -114,8 +106,6 @@ def parallelize_parsing(pages_url_list, func):
     end_time = datetime.now().time()
     print(f'Parsing complete : {end_time}')
     print(f'Start {start_time}  end : {end_time}')
-
-
     print('\n\n ------------|| END PARSING ||------------\n\n')
 
     #print(a)
