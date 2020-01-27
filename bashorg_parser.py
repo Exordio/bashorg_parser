@@ -4,6 +4,7 @@
 #frequency of the word "joke"
 #graph of the number of "likes"
 #table with the distribution of the number of posts by date
+from asyncore import file_dispatcher
 
 import requests
 import os
@@ -18,7 +19,8 @@ from bs4 import BeautifulSoup as bs
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0'}
 base_Url = 'https://bash.im'
-count_pg_to_parse = 2
+count_pg_to_parse = 50
+find_word = 'шутка'
 pages_url_List = []
 column_Names = ['quote_Number', 'quote_text', 'count_symbols', 'quote_total', 'quote_date', 'quote_link']
 parsed_Data_Df = pd.DataFrame(columns = column_Names)
@@ -60,16 +62,15 @@ def bashorg_parse(pages_url_List, headers):
                     quote_total = int(div.find('div', attrs = {'class' : 'quote__total'}).text)
                     quote_date = div.find('div', attrs = {'class' : 'quote__header_date'}).text[9:20] # 9:20 из за len строки 34, получаем ровную
                     parsed_Data_Df.loc[len(parsed_Data_Df)] = [quote_number, quote_text, count_symbols, quote_total, quote_date, quote_href]
-
                 except:
                     pass
 
-def parallelize_parsing(pages_url_list, func, headers):
+def parallelize_parsing(pages_url_list, func, headers): #парс в 2 потока
     start_time = datetime.now().time()
     print('\n\n ------------|| START PARSING ||------------')
     print(f'\nParsing start : {start_time}')
     #a, b, c ,d, e, f = np.array_split(pages_url_list, 6)
-    a, b  = np.array_split(pages_url_list, 2)
+    a, b  = np.array_split(pages_url_list, 2) # разделение списка на 2 части
     e1 = threading.Event()
     e2 = threading.Event()
     t1 = threading.Thread(target=func, args=(a, headers))
@@ -133,9 +134,10 @@ def main():
     parallelize_parsing(create_Pages_List(base_Url, headers), bashorg_parse, headers)
 
     print(' ------------|| ANALYSIS PART ||------------\n')
-    word_Frequency(parsed_Data_Df, 'шутка')
-    print('\n | Launch graph of the number of likes with sort |')
+    word_Frequency(parsed_Data_Df, find_word)
+    print('\n | Launch dependence graph |')
     graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
+    print('\n | Launch graph of the number of likes with sort |')
     graphic_barplot_nbr_Likes(parsed_Data_Df)
     print('\n ------------|| END ANALYSIS PART ||------------\n')
 
