@@ -88,7 +88,7 @@ def parallelize_parsing(pages_url_list, func, headers): #парс в 2 пото�
 
 def word_Frequency(parsed_data, search_word):
     count_word = 0
-    for index, row in parsed_data.iterrows():
+    for row in parsed_data.iterrows():
         text = row['quote_text'].lower()
         c = Counter(text.split())
         count_word += c[search_word]
@@ -166,7 +166,7 @@ def main():
     try:
         os.startfile(csv_File)
     except AttributeError:
-        print('| On linux module os, has no attrubute startfile. Check directory to exec csv file | ')
+        print('| On linux module os, has no attribute startfile. Check directory to exec csv file | ')
 
     print('\nALL DONE\n')
     print('\n ------------|| END ANALYSIS PART ||------------\n')
