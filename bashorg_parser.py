@@ -4,7 +4,6 @@
 #frequency of the word "joke"
 #graph of the number of "likes"
 #table with the distribution of the number of posts by date
-from asyncore import file_dispatcher
 
 import requests
 import os
@@ -19,8 +18,9 @@ from bs4 import BeautifulSoup as bs
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0'}
 base_Url = 'https://bash.im'
-count_pg_to_parse = 50
+count_pg_to_parse = 1
 find_word = 'шутка'
+csv_File = 'output_Quote_Date.csv'
 pages_url_List = []
 column_Names = ['quote_Number', 'quote_text', 'count_symbols', 'quote_total', 'quote_date', 'quote_link']
 parsed_Data_Df = pd.DataFrame(columns = column_Names)
@@ -98,7 +98,7 @@ def word_Frequency(parsed_data, search_word):
 def graphic_barplot_nbr_Likes(parsed_Data_Df):
     ax = parsed_Data_Df.sort_values(by='quote_total', ascending = False)
     ax = ax.head(10) # Для удобства 10 лучших
-    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#cc0000', align = 'center', fontsize = 9)
+    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#cc0000', align = 'center', fontsize = 8)
     ax.set_xlabel('Number of quote')
     ax.set_ylabel('Count likes')
     ax.set_title('graph of the number of likes with descending sort')
@@ -125,8 +125,23 @@ def graphic_Dependence_CSymb_To_Likes(dependence_DF):
 
 def create_Dependence_df(parsed_Data_Df):
     dependence_DF = parsed_Data_Df[['quote_total', 'count_symbols']]
-    dependence_DF = dependence_DF.sort_values(by='count_symbols', ascending = False)[::-1] #Сортировка от большего и переворот
+    dependence_DF = dependence_DF.sort_values(by='count_symbols', ascending = False)[::-1] #Сортировка от большего и переворот срезом
     return dependence_DF
+
+def df_to_list(parsed_data_df):
+    list_ar = parsed_data_df['quote_date'].values.tolist()
+    return list_ar
+
+def create_Table(parsed_data_df, csv_filename):
+    df_to_list(parsed_data_df)
+    count_Posts_on_date = Counter(df_to_list(parsed_data_df))
+    to_table_df = pd.DataFrame(columns = ['post_Date', 'count_Posts'])
+    for i in count_Posts_on_date:
+        #print(f'{i} {count_Posts_on_date.get(i)}')
+        to_table_df.loc[len(to_table_df)] = [i, count_Posts_on_date.get(i)]
+    print(to_table_df)
+    to_table_df.to_csv(csv_filename, sep='\t', encoding='utf-8')
+
 
 
 def main():
@@ -134,11 +149,16 @@ def main():
     parallelize_parsing(create_Pages_List(base_Url, headers), bashorg_parse, headers)
 
     print(' ------------|| ANALYSIS PART ||------------\n')
+
     word_Frequency(parsed_Data_Df, find_word)
+
     print('\n | Launch dependence graph |')
-    graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
-    print('\n | Launch graph of the number of likes with sort |')
-    graphic_barplot_nbr_Likes(parsed_Data_Df)
+    #graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
+
+    print('\n | Launch graph of the number of likes with sort |\n')
+    #graphic_barplot_nbr_Likes(parsed_Data_Df)
+
+    create_Table(parsed_Data_Df, csv_File)
     print('\n ------------|| END ANALYSIS PART ||------------\n')
 
 if __name__ =="__main__":
