@@ -18,14 +18,11 @@ from bs4 import BeautifulSoup as bs
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0'}
 base_Url = 'https://bash.im'
-count_pg_to_parse = 10
+count_pg_to_parse = 2
 pages_url_List = []
 column_Names = ['quote_Number', 'quote_text', 'count_symbols', 'quote_total', 'quote_date', 'quote_link']
 parsed_Data_Df = pd.DataFrame(columns = column_Names)
 
-
-
-print(f'Time start: {datetime.now().time()}')
 
 def create_Pages_List(base_url, headers):
     session = requests.Session()
@@ -100,14 +97,30 @@ def word_Frequency(parsed_data, search_word):
 def graphic_barplot_nbr_Likes(parsed_Data_Df):
     ax = parsed_Data_Df.sort_values(by='quote_total', ascending = False)
     ax = ax.head(10) # Для удобства 10 лучших
-    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#539caf', align = 'center', fontsize = 9)
-    ax.set_xlabel('Номер цитаты')
-    ax.set_ylabel('Кол-во лайков')
+    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#cc0000', align = 'center', fontsize = 9)
+    ax.set_xlabel('Number of quote')
+    ax.set_ylabel('Count likes')
+    ax.set_title('graph of the number of likes with descending sort')
     ax.plot()
+    plt.savefig('nbr_like_plot.png')
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
     plt.show()
 
-def dependence_Count_Symb_to_Likes(dependence_DF):
-    pass
+def graphic_Dependence_CSymb_To_Likes(dependence_DF):
+    ax = dependence_DF
+    ax = ax.plot(x = 'count_symbols', y = 'quote_total', rot = 0, style ='.-', color = '#cc0000')
+    ax.legend(['count_symbols/quote_total'])
+    ax.set_xlabel('Count symbols')
+    ax.set_ylabel('Count likes')
+    ax.set_title('dependence of the number of pluses to the ratio of the number of characters in the quote')
+    ax.grid(which="major", linewidth=1.2)
+    ax.grid(which="minor", linestyle="--", color="gray", linewidth=0.5)
+    ax.plot()
+    plt.savefig('Dependence_plot.png')
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
+    plt.show()
 
 def create_Dependence_df(parsed_Data_Df):
     dependence_DF = parsed_Data_Df[['quote_total', 'count_symbols']]
@@ -115,24 +128,19 @@ def create_Dependence_df(parsed_Data_Df):
     return dependence_DF
 
 
-#print(create_Pages_List(base_Url, headers))
-parallelize_parsing(create_Pages_List(base_Url, headers), bashorg_parse, headers)
+def main():
+    print(f'Time start: {datetime.now().time()}')
+    parallelize_parsing(create_Pages_List(base_Url, headers), bashorg_parse, headers)
 
-print('\n ------------|| ANALYSIS PART ||------------\n\n')
-word_Frequency(parsed_Data_Df, 'шутка')
-print('\n | Launch graph of the number of likes with sort |')
-graphic_barplot_nbr_Likes(parsed_Data_Df)
+    print(' ------------|| ANALYSIS PART ||------------\n')
+    word_Frequency(parsed_Data_Df, 'шутка')
+    print('\n | Launch graph of the number of likes with sort |')
+    graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
+    graphic_barplot_nbr_Likes(parsed_Data_Df)
+    print('\n ------------|| END ANALYSIS PART ||------------\n')
 
-print(create_Dependence_df(parsed_Data_Df))
-
-
-#print(parsed_Data_Df[['quote_total', 'count_symbols']])
-#create_Dependence_dfs(parsed_Data_Df)
-
-
-
-
-#print(parsed_Data_Df[['quote_Number', 'quote_total']])
+if __name__ =="__main__":
+    main()
 
 
 
