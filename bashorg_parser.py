@@ -23,6 +23,8 @@ pages_url_List = []
 column_Names = ['quote_Number', 'quote_text', 'count_symbols', 'quote_total', 'quote_date', 'quote_link']
 parsed_Data_Df = pd.DataFrame(columns = column_Names)
 
+
+
 print(f'Time start: {datetime.now().time()}')
 
 def create_Pages_List(base_url, headers):
@@ -45,8 +47,6 @@ def create_Pages_List(base_url, headers):
         print('create pages list/ error...')
 
 def bashorg_parse(pages_url_List, headers):
-    #start_time = datetime.now().time()
-    #i = 0
     for url in pages_url_List:
         session = requests.Session()
         request = session.get(url, headers = headers)
@@ -58,11 +58,10 @@ def bashorg_parse(pages_url_List, headers):
                 try:
                     quote_number = div.find('a', attrs = {'class' : 'quote__header_permalink'}).text
                     quote_href = f'''{base_Url}{div.find(class_ = "quote__header_permalink").get('href')}'''
-                    quote_text = div.find('div', attrs = {'class' : 'quote__body'}).text
+                    quote_text = str(div.find('div', attrs = {'class' : 'quote__body'}).text).lstrip(' ')
                     count_symbols = len(quote_text)
                     quote_total = int(div.find('div', attrs = {'class' : 'quote__total'}).text)
                     quote_date = div.find('div', attrs = {'class' : 'quote__header_date'}).text[9:20] # 9:20 из за len строки 34, получаем ровную
-
                     parsed_Data_Df.loc[len(parsed_Data_Df)] = [quote_number, quote_text, count_symbols, quote_total, quote_date, quote_href]
 
                 except:
@@ -92,9 +91,7 @@ def parallelize_parsing(pages_url_list, func, headers):
 def word_Frequency(parsed_data, search_word):
     count_word = 0
     for index, row in parsed_data.iterrows():
-        #print(index, row)
         text = row['quote_text'].lower()
-        #l =
         c = Counter(text.split())
         count_word += c[search_word]
     print(f' | На {count_pg_to_parse} страниц, постов проверено {25*count_pg_to_parse} : слово "{search_word}" встречалось : {count_word} раз |')
@@ -103,30 +100,34 @@ def word_Frequency(parsed_data, search_word):
 def graphic_barplot_nbr_Likes(parsed_Data_Df):
     ax = parsed_Data_Df.sort_values(by='quote_total', ascending = False)
     ax = ax.head(10) # Для удобства 10 лучших
-    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#539caf', align = 'center', fontsize = 12)
+    ax = ax.plot.bar(x='quote_Number', y='quote_total', rot=0, color = '#539caf', align = 'center', fontsize = 9)
     ax.set_xlabel('Номер цитаты')
     ax.set_ylabel('Кол-во лайков')
     ax.plot()
     plt.show()
 
-def dependence_Count_Symb_to_Likes(parsed_Data_Df):
+def dependence_Count_Symb_to_Likes(dependence_DF):
     pass
 
+def create_Dependence_df(parsed_Data_Df):
+    dependence_DF = parsed_Data_Df[['quote_total', 'count_symbols']]
+    dependence_DF = dependence_DF.sort_values(by='count_symbols', ascending = False)[::-1] #Сортировка от большего и переворот
+    return dependence_DF
 
-    #print(a)
-
-#bashorg_parse(base_Url, headers)
 
 #print(create_Pages_List(base_Url, headers))
 parallelize_parsing(create_Pages_List(base_Url, headers), bashorg_parse, headers)
 
 print('\n ------------|| ANALYSIS PART ||------------\n\n')
-
 word_Frequency(parsed_Data_Df, 'шутка')
-
 print('\n | Launch graph of the number of likes with sort |')
 graphic_barplot_nbr_Likes(parsed_Data_Df)
 
+print(create_Dependence_df(parsed_Data_Df))
+
+
+#print(parsed_Data_Df[['quote_total', 'count_symbols']])
+#create_Dependence_dfs(parsed_Data_Df)
 
 
 
