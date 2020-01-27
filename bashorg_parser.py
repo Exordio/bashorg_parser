@@ -159,16 +159,16 @@ def main():
     print('\n | Launch graph of the number of likes with sort |')
     graphic_barplot_nbr_Likes(parsed_Data_Df)
 
-    print('\n| Create table with the distribution of the number of posts by date | \n')
+    print('\n | Create table with the distribution of the number of posts by date | \n')
     create_Table(parsed_Data_Df, csv_File)
 
-    print('\n| Launch file | \n')
+    print('\n | Launch file | \n')
     try:
         os.startfile(csv_File)
     except AttributeError:
-        print('| On linux module os, has no attribute startfile. Check directory to exec csv file | ')
+        print(' | On linux module os, has no attribute startfile. Check directory to exec csv file | ')
 
-    print('\nALL DONE\n')
+    print('\n ALL DONE \n')
     print('\n ------------|| END ANALYSIS PART ||------------\n')
 
 if __name__ =="__main__":
