@@ -138,7 +138,7 @@ def create_Table(parsed_data_df, csv_filename):
     to_table_df = pd.DataFrame(columns = ['post_Date', 'count_Posts'])
     for i in count_Posts_on_date:
         to_table_df.loc[len(to_table_df)] = [i, count_Posts_on_date.get(i)]
-    to_table_df['post_Date'] = pd.to_datetime(to_table_df.post_Date, dayfirst = True) 
+    to_table_df['post_Date'] = pd.to_datetime(to_table_df.post_Date, dayfirst = True)
     to_table_df = to_table_df.sort_values(by='post_Date', ascending = False)
     print(to_table_df)
     to_table_df.to_csv(csv_filename, sep=';', encoding='utf-8', index = False)
@@ -163,7 +163,10 @@ def main():
     create_Table(parsed_Data_Df, csv_File)
 
     print('\n| Launch file | \n')
-    os.startfile(csv_File)
+    try:
+        os.startfile(csv_File)
+    except AttributeError:
+        print('| On linux module os, has no attrubute startfile. Check directory to exec csv file | ')
 
     print('\nALL DONE\n')
     print('\n ------------|| END ANALYSIS PART ||------------\n')
