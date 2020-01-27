@@ -88,7 +88,7 @@ def parallelize_parsing(pages_url_list, func, headers): #парс в 2 пото�
 
 def word_Frequency(parsed_data, search_word):
     count_word = 0
-    for row in parsed_data.iterrows():
+    for index, row in parsed_data.iterrows():
         text = row['quote_text'].lower()
         c = Counter(text.split())
         count_word += c[search_word]
