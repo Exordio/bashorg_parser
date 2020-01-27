@@ -15,3 +15,6 @@ Tasks:
 5. table with the distribution of the number of posts by date
 
 
+![plot](https://raw.githubusercontent.com/Exordio/bashorg_parser/master/nbr_like_plot.png)
+![plot](https://raw.githubusercontent.com/Exordio/bashorg_parser/master/Dependence_plot.png)
+
