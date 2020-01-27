@@ -6,8 +6,8 @@
 #table with the distribution of the number of posts by date
 
 import requests
-import os
 import threading
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup as bs
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0'}
 base_Url = 'https://bash.im'
-count_pg_to_parse = 1
+count_pg_to_parse = 50
 find_word = 'шутка'
 csv_File = 'output_Quote_Date.csv'
 pages_url_List = []
@@ -125,7 +125,7 @@ def graphic_Dependence_CSymb_To_Likes(dependence_DF):
 
 def create_Dependence_df(parsed_Data_Df):
     dependence_DF = parsed_Data_Df[['quote_total', 'count_symbols']]
-    dependence_DF = dependence_DF.sort_values(by='count_symbols', ascending = False)[::-1] #Сортировка от большего и переворот срезом
+    dependence_DF = dependence_DF.sort_values(by='count_symbols', ascending = True)#[#Сортировка от меньшего
     return dependence_DF
 
 def df_to_list(parsed_data_df):
@@ -137,10 +137,11 @@ def create_Table(parsed_data_df, csv_filename):
     count_Posts_on_date = Counter(df_to_list(parsed_data_df))
     to_table_df = pd.DataFrame(columns = ['post_Date', 'count_Posts'])
     for i in count_Posts_on_date:
-        #print(f'{i} {count_Posts_on_date.get(i)}')
         to_table_df.loc[len(to_table_df)] = [i, count_Posts_on_date.get(i)]
+    to_table_df['post_Date'] = pd.to_datetime(to_table_df.post_Date, dayfirst = True) 
+    to_table_df = to_table_df.sort_values(by='post_Date', ascending = False)
     print(to_table_df)
-    to_table_df.to_csv(csv_filename, sep='\t', encoding='utf-8')
+    to_table_df.to_csv(csv_filename, sep=';', encoding='utf-8', index = False)
 
 
 
@@ -153,12 +154,18 @@ def main():
     word_Frequency(parsed_Data_Df, find_word)
 
     print('\n | Launch dependence graph |')
-    #graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
+    graphic_Dependence_CSymb_To_Likes(create_Dependence_df(parsed_Data_Df))
 
-    print('\n | Launch graph of the number of likes with sort |\n')
-    #graphic_barplot_nbr_Likes(parsed_Data_Df)
+    print('\n | Launch graph of the number of likes with sort |')
+    graphic_barplot_nbr_Likes(parsed_Data_Df)
 
+    print('\n| Create table with the distribution of the number of posts by date | \n')
     create_Table(parsed_Data_Df, csv_File)
+
+    print('\n| Launch file | \n')
+    os.startfile(csv_File)
+
+    print('\nALL DONE\n')
     print('\n ------------|| END ANALYSIS PART ||------------\n')
 
 if __name__ =="__main__":
